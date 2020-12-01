@@ -11,22 +11,9 @@ TYPE_TO_CHAR['wood'] ='W'
 
 BLACK = (0, 0, 0)
 RED   = (255, 0, 0)
+GREEN = (0, 255, 0)
 BROWN = (150, 100, 50)
-
-def passthrough(x):
-    return x
-
-def prettyGrid(grid, f=passthrough):
-    W = len(grid[0])
-    s = "+" + " -"*W + "+\n"
-    for row in grid:
-        s += "|"
-        for cell in row:
-            s += " "+str(f(cell))
-        s += "|\n"
-    s += "+" + " -"*W + "+\n"
-    return s
-
+YELLOW= (255, 255, 0)
 
 class CellFactory:
     def __init__(self, parent_world, parent_grid):
@@ -40,7 +27,8 @@ class CellFactory:
             return Cell_FIRE(coords, self.parent_world, self.parent_grid)
         elif block_type == 'wood':
             return Cell_WOOD(coords, self.parent_world, self.parent_grid)
-
+        elif block_type == 'victim':
+            return Cell_VICTIM(coords, self.parent_world, self.parent_grid)
 
 
 class World:
@@ -49,42 +37,14 @@ class World:
         self.H = H
         self.grid = None
         self.init_grid()
+        self.cellFactory = CellFactory(self, self.grid)
+        self.modifiedButUnpropagated_WarningBool = False
     
-    def _dbg_adjacent_flammable_grid(self):
-        adjFlameGrid = self.create_empty_grid()
-        for cell in self.list_cells():
-            adjFlameGrid[cell.x][cell.y] = cell.foundAdjacentFlammable
-        return adjFlameGrid
-    
-    def load_world_from_file(self, filename):
-        f = open(filename, 'r')
-        s = f.read()
-        self.load_world_from_string(s)
+    def createCell(self, coords, block_type):
+        x, y = coords
+        self.grid[x][y] = self.cellFactory.createCell((x, y), block_type)
+        self.modifiedButUnpropagated_WarningBool = True
 
-    def load_world_from_string(self, s):
-        lines = s.splitlines()
-        self.W, self.H = [int(v) for v in lines[0].split()]
-        self.load_grid_from_string_list(lines[1:])
-
-    def load_grid_from_string_list(self, s_list):
-        self.init_grid()
-        cellFactory = CellFactory(self, self.grid)
-        for line in s_list:
-            x, y, block_type = line.split()
-            x, y = int(x), int(y)
-            self.grid[x][y] = cellFactory.createCell((x, y), block_type)
-        self.propagate()
-
-    def load_grid_from_string(self, s):
-        self.load_grid_from_string_list(s.splitlines())
-
-    def serialize(self):
-        s = str(self.W) + " " + str(self.H) + "\n"
-        for cell in self.list_cells():
-            serialized_cell = cell.serialize()
-            if serialized_cell != None:
-                s += serialized_cell
-        return s
     
     def create_empty_grid(self):
         newGrid = [None]*self.H
@@ -97,10 +57,10 @@ class World:
             Initialize the grid and fill it with default block types
         """
         self.grid = self.create_empty_grid()
-        cellFactory = CellFactory(self, self.grid)
+        self.cellFactory = CellFactory(self, self.grid)
         for x in range(self.H):
             for y in range(self.W):
-                self.grid[x][y] = cellFactory.createCell((x, y), block_type)
+                self.grid[x][y] = self.cellFactory.createCell((x, y), block_type)
         self.propagate()
     
     def list_cells(self):
@@ -136,6 +96,7 @@ class World:
     def propagate(self):
         for cell in self.list_cells():
             cell.propagate(self.grid, self)
+        self.modifiedButUnpropagated_WarningBool = False
 
 class Cell:
     def __init__(self, coords, parent_world, parent_grid, block_type='air'):
@@ -233,6 +194,34 @@ class Cell_WOOD(Cell):
         for cell in self.list_adjacent_cells():
             cell.addAdjacentFlammable()
 
+
+class Cell_firefighter(Cell):
+    def __init_(self, coords, parent_world, parent_grid):
+        super().__init__(coords, parent_world, parent_grid, 'firefighter')
+        self.color = YELLOW
+    
+    def action(self):
+        pass
+
+    def step(self, newWorld, newGrid):
+        self.parent_grid = newGrid
+        self.parent_world= newWorld
+        return self
+
+
+class Cell_VICTIM(Cell):
+    def __init__(self, coords, parent_world, parent_grid, hp = 100):
+        super().__init__(coords, parent_world, parent_grid, 'victim')
+        self.hp = hp
+        self.color = GREEN
+    
+    def step(self, newWorld, newGrid):
+        damage = self.countVicinitylames
+        newHP = self.hp-damage
+        if newHP <= 0:
+            return Cell_AIR(self.coords, newWorld, newGrid)
+        else:
+            return Cell_VICTIM(self.coords, newWorld, newGrid, newHP)
 
 
 class Cell_AIR(Cell):
