@@ -1,24 +1,30 @@
 definitions:
     adjacent cells:
         cells 'A' and 'B' are adjacent if:
-            1) they are orthogonally or diagonally connected
+            they are orthogonally or diagonally connected
             formally: cell [i, j] is connected with [i+x, j+y] where x and y are each in the values {-1, 0, 1}
 
     vicinity of a cell:
         the vicinity of a cell 'A' is defined as:
-            the set of cells in the cube centered at 'A' and of size 5x5x5
+            the set of cells in the cube centered at 'A' and of size 5x5
 
-    supporting cells:
+    supporting cells (NOT USED IN 2D):
         cell 'A' supports cell 'B' if:
             1) cell 'A' is a solid block
             2) cell 'A' is supported by a cell other than cell B, or by any structure supported by B (i.e.: 'A' not a node in the tree rooted at 'B')
             3) cell 'A' is adjacent to cell 'B'
 FIRE:
     If a cell 'A' is on fire:
-        if there are less than 4 cells on fire in the vicinity of 'A': 40% chance of the fire is out on next step
+        if there are less than 4 cells on fire in the vicinity of 'A': 5% chance of the fire is out on next step
         if no flammable block is in the vicinity of 'A', the fire is out on next step
     if a cell 'A' is not on fire and is adjacent to a flammable block:
-        for each cell on fire in the vicinity of 'A', there is an extra 5% chance of 'A' catching fire next step
+        for each cell on fire in the vicinity of 'A', there is an extra 4% chance of 'A' catching fire next step
 
-PHYSICS:
-    ajjeleh yeha la v2 pls thx.
+WOOD:
+    for each cell on fire in the vicinity of a wood block, the wood block loses 1 point of "health"
+    the wood block is destroyed when its health reaches 0. (initially 100)
+
+VICTIMS:
+    Follow same rules as WOOD. victims die when their health reaches 0.
+    Additionally, we define the "morale" of the victim as being a combination of his/her remaining health at the end of the simulation, and the time it took to rescue him/her
+    i.e.: more fire damage-> less morale, faster rescuing -> higher morale.
