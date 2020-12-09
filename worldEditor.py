@@ -3,11 +3,11 @@ from utils.Serialization import serialize
 import pygame, sys
 
 filename = "worlds/testFireSpread.world"
-world = World(20, 20)
+world = World(40, 40)
 
 pygame.init()
 
-size = width, height = 320, 320
+size = width, height = 640, 640
 block_width = width/world.W
 block_height= height/world.H
 screen = pygame.display.set_mode(size)

@@ -40,6 +40,9 @@ while 1:
                 textTimer = 255
                 display_mode = (display_mode+1)%DISPLAY_MODES
                 displayText = d[display_mode]
+            if ky[pygame.K_s]:
+                pygame.image.save(screen, "sc"+str(timestep)+".png")
+
     screen.fill((0, 0, 0))
     if display_mode == 0:
         world.draw(screen, block_width, block_height)
