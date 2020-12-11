@@ -1,5 +1,6 @@
 from simulation.Basic2DSim import World
-from utils.Serialization import load_world_from_file
+from utils.Serialization import load_world_from_file, encode
+import numpy as np
 import pygame, sys
 
 filename = "worlds/editorTest.world"

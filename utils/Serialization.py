@@ -1,4 +1,5 @@
 from simulation.Basic2DSim import World
+import numpy as np
 
 def load_world_from_file(filename):
     f = open(filename, 'r')
@@ -23,3 +24,10 @@ def serialize(world):
         if serialized_cell != None:
             s += serialized_cell
     return s
+
+def encode(world):
+    W, H = world.W, world.H
+    g = np.zeros((W, H))
+    for cell in world.list_cells():
+        g[cell.x, cell.y] = int(cell)
+    return g
