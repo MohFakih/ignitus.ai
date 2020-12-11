@@ -7,6 +7,14 @@ TYPE_TO_CHAR['air']  =' '
 TYPE_TO_CHAR['fire'] ='X'
 TYPE_TO_CHAR['block']='#'
 TYPE_TO_CHAR['wood'] ='W'
+TYPE_TO_CHAR['victim'] = 'V'
+
+TYPE_TO_INT = {}
+TYPE_TO_INT['air'] = 0
+TYPE_TO_INT['fire'] = 1
+TYPE_TO_INT['block'] = 2
+TYPE_TO_INT['wood'] = 3
+TYPE_TO_INT['victim'] = 4
 
 
 BLACK = (0, 0, 0)
@@ -70,6 +78,12 @@ class World:
                 L.append(self.grid[x][y])
         return L
 
+    def isTerminal(self):
+        for cell in self.list_cells():
+            if cell.block_type == 'fire':
+                return False
+        return True
+
     def __str__(self):
         s = "+" + " -"*self.W + "+\n"
         for row in self.grid:
@@ -89,6 +103,7 @@ class World:
         for old_cell in self.list_cells():
             x = old_cell.x
             y = old_cell.y
+            # if old_cell.block_type == 'air':
             newGrid[x][y] = old_cell.step(self, newGrid)
         self.grid = newGrid
         self.propagate()
@@ -137,6 +152,9 @@ class Cell:
     def __str__(self):
         return TYPE_TO_CHAR[self.block_type]
     
+    def __int__(self):
+        return TYPE_TO_INT[self.block_type]
+
     def step(self, newWorld, newGrid):
         pass
 
@@ -166,7 +184,7 @@ class Cell_FIRE(Cell):
             return Cell_AIR(self.coords, newWorld, newGrid)
         else:
             # Check for flames in the vicinity
-            if self.countVicinitylames < 4 and np.random.random() < 0.05:
+            if self.countVicinitylames < 4 and np.random.random() < 0.04:
                 return Cell_AIR(self.coords, newWorld, newGrid)
             else:
                 return Cell_FIRE(self.coords, newWorld, newGrid)
@@ -183,7 +201,7 @@ class Cell_WOOD(Cell):
         self.color = BROWN
     
     def step(self, newWorld, newGrid):
-        damage = self.countVicinitylames
+        damage = self.countVicinitylames*0.2
         newHP = self.hp-damage
         if newHP <= 0:
             return Cell_AIR(self.coords, newWorld, newGrid)
@@ -193,20 +211,6 @@ class Cell_WOOD(Cell):
     def propagate(self, newWorld, newGrid):
         for cell in self.list_adjacent_cells():
             cell.addAdjacentFlammable()
-
-
-class Cell_firefighter(Cell):
-    def __init_(self, coords, parent_world, parent_grid):
-        super().__init__(coords, parent_world, parent_grid, 'firefighter')
-        self.color = YELLOW
-    
-    def action(self):
-        pass
-
-    def step(self, newWorld, newGrid):
-        self.parent_grid = newGrid
-        self.parent_world= newWorld
-        return self
 
 
 class Cell_VICTIM(Cell):
@@ -231,7 +235,7 @@ class Cell_AIR(Cell):
     
     def step(self, newWorld, newGrid):
         if self.foundAdjacentFlammable:
-            probability_of_fire = 0.04*self.countVicinitylames
+            probability_of_fire = 0.01*self.countVicinitylames
             # if probability_of_fire != 0:
             #     print(self.coords, probability_of_fire)
             if np.random.random() < probability_of_fire:
