@@ -21,46 +21,43 @@ action = 0
 
 observation = agent.reset()
 while 1:
-    clock.tick(60)
+    clock.tick(10)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
-        if event.type == pygame.KEYDOWN:
-            ky = pygame.key.get_pressed()
-            if ky[pygame.K_r]:
-                timestep += 1
-                observation, reward, temrinal = agent.step(action)
-                action = 0
-            if ky[pygame.K_w]:
-                action = 1
-                timestep += 1
-                observation, reward, temrinal = agent.step(action)
-            elif ky[pygame.K_d]:
-                action=2
-                timestep += 1
-                observation, reward, temrinal = agent.step(action)
-            elif ky[pygame.K_s]:
-                action=3
-                timestep += 1
-                observation, reward, temrinal = agent.step(action)
-            elif ky[pygame.K_a]:
-                action=4
-                timestep += 1
-                observation, reward, temrinal = agent.step(action)
-            elif ky[pygame.K_SPACE]:
-                action = 5
-                timestep += 1
-                observation, reward, temrinal = agent.step(action)
-            elif ky[pygame.K_TAB]:
-                action = 6
-                timestep += 1
-                observation, reward, temrinal = agent.step(action)
-            elif ky[pygame.K_LSHIFT]:
-                action = 7
-                timestep += 1
-                observation, reward, temrinal = agent.step(action)
-
-                
+    ky = pygame.key.get_pressed()
+    if ky[pygame.K_r]:
+        timestep += 1
+        observation, reward, temrinal = agent.step(action)
+        action = 0
+    if ky[pygame.K_w]:
+        action = 1
+        timestep += 1
+        observation, reward, temrinal = agent.step(action)
+    elif ky[pygame.K_d]:
+        action=2
+        timestep += 1
+        observation, reward, temrinal = agent.step(action)
+    elif ky[pygame.K_s]:
+        action=3
+        timestep += 1
+        observation, reward, temrinal = agent.step(action)
+    elif ky[pygame.K_a]:
+        action=4
+        timestep += 1
+        observation, reward, temrinal = agent.step(action)
+    elif ky[pygame.K_SPACE]:
+        action = 5
+        timestep += 1
+        observation, reward, temrinal = agent.step(action)
+    elif ky[pygame.K_TAB]:
+        action = 6
+        timestep += 1
+        observation, reward, temrinal = agent.step(action)
+    elif ky[pygame.K_LSHIFT]:
+        action = 7
+        timestep += 1
+        observation, reward, temrinal = agent.step(action)
 
     screen.fill((0, 0, 0))
 

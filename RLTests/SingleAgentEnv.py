@@ -2,6 +2,8 @@ from simulation.Basic2DSim import World
 from utils.Serialization import encode
 from utils.Serialization import load_world_from_file
 from RLTests.Environment import Environment
+from tensorflow.keras.utils import to_categorical
+import tensorflow as tf
 
 class SingleAgentEnvironment(Environment):
     def __init__(self, worldFile):
@@ -12,9 +14,18 @@ class SingleAgentEnvironment(Environment):
         self.waterSupply = 1.0
         self.hp = 1.0
     
+    def preprocess_observation(self, observation):
+        map_obs = to_categorical(observation, num_classes=6)
+        map_obs[self.x, self.y, 5] = 1
+        innerState= tf.constant([1 if self.carryingVictim else 0, self.waterSupply, self.hp])
+        return (map_obs, innerState)
+
+    def observe(self):
+        return encode(self.world)
+
     def reset(self):
         self.world = load_world_from_file(self.worldFile)
-        return encode(self.world)
+        return self.preprocess_observation(self.observe())
 
     def getRect(self, block_width, block_height):
         return [self.y * block_height, self.x * block_width, block_width, block_height]
@@ -68,11 +79,13 @@ class SingleAgentEnvironment(Environment):
         else:
             raise Exception("Illegal action"+str(action))
 
-    def reward(self, observation, terminal):
+    def reward(self, observation, terminal, stateBefore, stateAfter):
+        victimsBefore, woodBefore = stateBefore
+        victimsAfter, woodAfter = stateAfter
         if not terminal:
-            return -1
+            reward = -1
         else:
-            if self.world.grid[self.x][self.y].block_type not in ['air', 'victim', 'fire']:
+            if self.isAgentDead():
                 return -10000
             reward = -1
             for row in observation:
@@ -83,24 +96,32 @@ class SingleAgentEnvironment(Environment):
                         reward += 20
             if self.carryingVictim:
                 reward += 20
-            return reward
-
-    def step(self, action):
-        self.action(action)
-
-        victimsBefore, woodBefore = self.countVictimsAndFire()
-        self.world.step()
-        victimsAfter, woodAfter = self.countVictimsAndFire()
-
-        observation = encode(self.world)
-        terminal = self.world.isTerminal() or self.world.grid[self.x][self.y].block_type not in ['air', 'victim', 'fire'] or self.hp < 0
-        reward = self.reward(observation, terminal)
         
         deltaVictims = victimsBefore - victimsAfter
         deltaWood = woodBefore - woodAfter
         deltaVictims += (1 if self.carryingVictim else 0)
         reward += deltaWood * 3
-        if deltaVictims < 0:
-            reward += deltaVictims*20
+        reward += deltaVictims*20
+        return reward
 
-        return observation, reward, terminal
+    def isAgentDead(self):
+        return self.world.grid[self.x][self.y].block_type not in ['air', 'victim', 'fire'] or self.hp < 0
+
+    def isTerminal(self):
+        return self.world.isTerminal() or self.isAgentDead()
+
+    def worldStep(self):
+        stateBefore = self.countVictimsAndFire()
+        self.world.step()
+        stateAfter = self.countVictimsAndFire()
+        return stateBefore, stateAfter
+
+    def step(self, action):
+        self.action(action)
+        stateBefore, stateAfter = self.worldStep()
+        observation = self.observe()
+        terminal = self.isTerminal()
+        reward = self.reward(observation, terminal, stateBefore, stateAfter)
+        preprocessed_observation = self.preprocess_observation(observation)
+
+        return preprocessed_observation, reward, terminal
