@@ -1,4 +1,4 @@
-from RLTests.singleAgent import SingleAgentEnvironment
+from RLTests.SingleAgentEnv import SingleAgentEnvironment
 from utils.Serialization import load_world_from_file, encode
 import numpy as np
 import pygame, sys
@@ -17,6 +17,8 @@ timestep = 0
 clock = pygame.time.Clock()
 action = 0
 
+    
+
 observation = agent.reset()
 while 1:
     clock.tick(60)
@@ -31,18 +33,32 @@ while 1:
                 action = 0
             if ky[pygame.K_w]:
                 action = 1
+                timestep += 1
+                observation, reward, temrinal = agent.step(action)
             elif ky[pygame.K_d]:
                 action=2
+                timestep += 1
+                observation, reward, temrinal = agent.step(action)
             elif ky[pygame.K_s]:
                 action=3
+                timestep += 1
+                observation, reward, temrinal = agent.step(action)
             elif ky[pygame.K_a]:
                 action=4
+                timestep += 1
+                observation, reward, temrinal = agent.step(action)
             elif ky[pygame.K_SPACE]:
                 action = 5
+                timestep += 1
+                observation, reward, temrinal = agent.step(action)
             elif ky[pygame.K_TAB]:
                 action = 6
+                timestep += 1
+                observation, reward, temrinal = agent.step(action)
             elif ky[pygame.K_LSHIFT]:
                 action = 7
+                timestep += 1
+                observation, reward, temrinal = agent.step(action)
 
                 
 
