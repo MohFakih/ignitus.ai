@@ -3,7 +3,7 @@ from utils.Serialization import load_world_from_file, encode
 import numpy as np
 import pygame, sys
 
-filename = "worlds/editorTest.world"
+filename = "worlds/test2.world"
 agent = SingleAgentEnvironment(filename)
 world = agent.world
 pygame.init()
@@ -18,7 +18,7 @@ clock = pygame.time.Clock()
 action = 0
 
     
-
+reward = 0
 observation = agent.reset()
 while 1:
     clock.tick(10)
@@ -58,7 +58,7 @@ while 1:
         action = 7
         timestep += 1
         observation, reward, temrinal = agent.step(action)
-
+    
     screen.fill((0, 0, 0))
 
     agent.world.draw(screen, block_width, block_height)
